@@ -1,0 +1,7 @@
+input{
+    border:1px solid #eee;
+}
+.done{
+    text-decoration: line-through;
+    color:#999;
+}

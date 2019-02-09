@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible"
+          content="ie=edge">
+    <title>App</title>
+    <!-- <script src="https://cdn.bootcss.com/vue/2.6.0-beta.3/vue.common.dev.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.22/dist/vue.js"></script>
+    <link rel="stylesheet"
+          href="/static/index.css" />
+
+</head>
+
+<body>
+    <div id="app">
+        <h1>App</h1>
+        <hr />
+        <div>
+            <input type="text"
+                   v-model="newValue">
+            <button @click="add">添加新任务</button>
+        </div>
+
+        <ul>
+            <li v-for="todo in todos"
+                :class="todo.done ? 'done' : ''">
+                <input :checked="todo.done" type="checkbox">
+                <span>
+                    {{todo.title}}
+                </span>
+                <button @click="remove(todo.id)">删除</button>
+            </li>
+        </ul>
+
+    </div>
+    <script type="module">
+        let app;
+    new Vue({
+            el:'#app',
+            data:{
+                todos:[],
+                newValue:'',
+            },
+            
+            created(){
+                app = this;
+                app.getList()
+            },
+            methods:{
+                getList(){
+                    fetch('/todos').then(res=>{
+                        return res.json()
+                    }).then(({data,code}) => {
+                        if(code === 0) {
+                            app.todos = data;
+                        } else {
+                            alert('获取列表失败！')
+                        }
+                    })
+                },
+                add(){
+                    fetch('/add',{
+                        method:'post',
+                        headers:{
+                            'content-type':'application/json'
+                        },
+                        body:JSON.stringify({title:app.newValue})
+                    }).then(res=>{
+                        return res.json()
+                    }).then(data => {
+                        if(data.code === 0 ){
+                            app.newValue = ''
+                            app.getList()
+                        } else {
+                            alert('添加失败！')
+                        }
+                    })
+                },
+                remove(id){
+                    fetch('/remove',{
+                        method:'post',
+                        headers:{
+                            'content-type':'application/json'
+                        },
+                        body:JSON.stringify({id})
+                    }).then(res=>{
+                        return res.json()
+                    }).then(data => {
+                        if(data.code === 0 ){
+                            app.newValue = ''
+                            app.getList()
+                        } else {
+                            alert('删除失败！')
+                        }
+                    })
+                }
+            },
+        })
+    </script>
+
+</body>
+
+</html>
