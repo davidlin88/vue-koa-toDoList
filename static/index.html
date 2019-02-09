@@ -26,13 +26,16 @@
         </div>
 
         <ul>
-            <li v-for="todo in todos"
+            <li v-for="(todo,index) in todos"
+                :key="todo.id"
                 :class="todo.done ? 'done' : ''">
-                <input :checked="todo.done" type="checkbox">
+                <input @click.prevent="update(index)"
+                       :checked="todo.done"
+                       type="checkbox">
                 <span>
                     {{todo.title}}
                 </span>
-                <button @click="remove(todo.id)">删除</button>
+                <button @click="remove(index)">删除</button>
             </li>
         </ul>
 
@@ -80,21 +83,46 @@
                         }
                     })
                 },
-                remove(id){
+                remove(index){
+                    const id = this.todos[index].id;
+                    const done = this.todos[index].done ? 0 : 1;
+
                     fetch('/remove',{
                         method:'post',
                         headers:{
                             'content-type':'application/json'
                         },
-                        body:JSON.stringify({id})
+                        body:JSON.stringify({id,done})
                     }).then(res=>{
-                        return res.json()
+                        if(res.ok) {
+                            return res.json()
+                        }
                     }).then(data => {
                         if(data.code === 0 ){
                             app.newValue = ''
                             app.getList()
                         } else {
                             alert('删除失败！')
+                        }
+                    })
+                },
+                update(index){
+                    const id = this.todos[index].id;
+                    const done = this.todos[index].done ? 0 : 1;
+
+                    fetch('/update',{
+                        method:'post',
+                        headers:{
+                            'content-type':'application/json'
+                        },
+                        body:JSON.stringify({id,done})
+                    }).then(res=>{
+                            return res.json()
+                    }).then(data => {
+                        if(data.code === 0 ){
+                            app.getList()
+                        } else {
+                            alert('修改失败！')
                         }
                     })
                 }

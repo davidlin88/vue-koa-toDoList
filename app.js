@@ -32,7 +32,7 @@
 
     router.get('/todos', async ctx => {
         // 返回一个数组，第一项为查询的记录数组，第二项为记录的属性
-        let [data] = await connection.query('SELECT title,done,id FROM todos')
+        let [data] = await connection.query('SELECT title,done,id FROM todos ORDER BY id DESC')
 
         ctx.body = {
             code: 0,
@@ -67,7 +67,6 @@
 
     router.post('/remove', async ctx => {
         const id = ctx.request.body.id || '';
-        const title = ctx.request.body.title || '';
         if (id === '') {
             ctx.body = {
                 code: 1,
@@ -76,7 +75,7 @@
             return
         }
 
-        const [res] = await connection.query(`INSERT INTO todos (title) VALUES ('${title}')`)
+        const [res] = await connection.query(`DELETE FROM todos WHERE id=${id}`)
 
         if (res.affectedRows > 0) {
             ctx.body = {
@@ -91,6 +90,32 @@
         }
     })
 
+    router.post('/update', async ctx => {
+        const id = ctx.request.body.id || '';
+        const done = ctx.request.body.done || 0;
+
+        if (id === '') {
+            ctx.body = {
+                code: 1,
+                msg: 'id不能为空！'
+            }
+            return
+        }
+
+        const [res] = await connection.query(`UPDATE todos SET done=${done} WHERE id=${id}`)
+
+        if (res.affectedRows > 0) {
+            ctx.body = {
+                code: 0,
+                msg: '修改成功',
+            }
+        } else {
+            ctx.body = {
+                code: 0,
+                msg: '修改失败，请联系管理员。',
+            }
+        }
+    })
 
 
 
