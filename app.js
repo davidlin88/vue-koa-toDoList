@@ -31,12 +31,34 @@
     })
 
     router.get('/todos', async ctx => {
-        // 返回一个数组，第一项为查询的记录数组，第二项为记录的属性
-        let [data] = await connection.query('SELECT title,done,id FROM todos ORDER BY id DESC')
+        /* 
+            @page 页码 Number
+            @pageSize 一页个数 Number
+            @type todos类型 String | Number
+        
+        */
+        const page = Number(ctx.query.page) || 1;
+        const pageSize = Number(ctx.query.pageSize) || 5;
+        const type = ctx.query.type || '';
+
+        let where = '';
+        if (type) {
+            where = `WHERE done=${type}`
+        }
+
+        const sql = `SELECT title,done,id FROM todos ${where}`
+        const [todosAll] = await connection.query(sql);
+        const totalPage = Math.ceil(todosAll.length / pageSize);
+
+        const sql2 = `SELECT title,done,id FROM todos ${where} LIMIT ${pageSize} OFFSET ${(page-1)*pageSize}`
+        const [todos] = await connection.query(sql2)
 
         ctx.body = {
             code: 0,
-            data
+            data: {
+                data: todos,
+                totalPage
+            }
         };
     })
 
@@ -51,6 +73,7 @@
         }
 
         const [res] = await connection.query(`INSERT INTO todos (title) VALUES ('${title}')`)
+
 
         if (res.affectedRows > 0) {
             ctx.body = {
@@ -112,7 +135,7 @@
         } else {
             ctx.body = {
                 code: 0,
-                msg: '修改失败，请联系管理员。',
+                msg: '修改失败，请联系管理 员。',
             }
         }
     })

@@ -1,7 +1,19 @@
 input{
     border:1px solid #eee;
 }
+.list{
+    height: 200px;
+}
 .done{
     text-decoration: line-through;
     color:#999;
+}
+a.active{
+    color:greenyellow;
+}
+.pages .link{
+    margin: 10px;
+}
+button.active{
+    background:yellowgreen;
 }

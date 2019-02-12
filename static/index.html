@@ -25,7 +25,7 @@
             <button @click="add">添加新任务</button>
         </div>
 
-        <ul>
+        <ul class="list">
             <li v-for="(todo,index) in todos"
                 :key="todo.id"
                 :class="todo.done ? 'done' : ''">
@@ -33,11 +33,25 @@
                        :checked="todo.done"
                        type="checkbox">
                 <span>
-                    {{todo.title}}
+                    {{todo.id}}#{{todo.title}}
                 </span>
                 <button @click="remove(index)">删除</button>
             </li>
         </ul>
+        <div class="pages">
+            <a href="#"
+               v-for="n in totalPage"
+               :class="[{active:n===page},'link']"
+               @click="changePage(n)">{{n}}</a>
+        </div>
+
+        <button @click="changeType()"
+                :class="{'active': type ===''}">全部</button>
+        <button @click="changeType(0)"
+                :class="{'active': type === 0}">未完成</button>
+        <button @click="changeType(1)"
+                :class="{'active': type === 1}">已完成</button>
+
 
     </div>
     <script type="module">
@@ -47,6 +61,10 @@
             data:{
                 todos:[],
                 newValue:'',
+                page:1,
+                pageSize:4,
+                totalPage:1,
+                type:'',
             },
             
             created(){
@@ -54,16 +72,27 @@
                 app.getList()
             },
             methods:{
-                getList(){
-                    fetch('/todos').then(res=>{
+                getList({type=''}={}){
+                    const pageSize = app.pageSize;
+                    const page = app.page;
+                    fetch(`/todos?page=${page}&pageSize=${pageSize}&type=${type}`).then(res=>{
                         return res.json()
-                    }).then(({data,code}) => {
+                    }).then(({data,code}={}) => {
                         if(code === 0) {
-                            app.todos = data;
+                            app.todos = data.data;
+                            app.totalPage = data.totalPage;
                         } else {
                             alert('获取列表失败！')
                         }
                     })
+                },
+                changeType(type=''){
+                    app.type =type;
+                    app.getList({type})
+                },
+                changePage(page = 1) {
+                    app.page = page;
+                    app.getList()
                 },
                 add(){
                     fetch('/add',{
@@ -84,8 +113,8 @@
                     })
                 },
                 remove(index){
-                    const id = this.todos[index].id;
-                    const done = this.todos[index].done ? 0 : 1;
+                    const id = app.todos[index].id;
+                    const done = app.todos[index].done ? 0 : 1;
 
                     fetch('/remove',{
                         method:'post',
@@ -107,8 +136,8 @@
                     })
                 },
                 update(index){
-                    const id = this.todos[index].id;
-                    const done = this.todos[index].done ? 0 : 1;
+                    const id = app.todos[index].id;
+                    const done = app.todos[index].done ? 0 : 1;
 
                     fetch('/update',{
                         method:'post',
