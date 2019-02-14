@@ -82,7 +82,7 @@
             }
         } else {
             ctx.body = {
-                code: 0,
+                code: 2,
                 msg: '添加失败，请联系管理员。',
             }
         }
@@ -107,7 +107,7 @@
             }
         } else {
             ctx.body = {
-                code: 0,
+                code: 2,
                 msg: '添加失败，请联系管理员。',
             }
         }
@@ -125,7 +125,9 @@
             return
         }
 
-        const [res] = await connection.query(`UPDATE todos SET done=${done} WHERE id=${id}`)
+        const sql = 'UPDATE todos SET ??=? WHERE ??=?'
+
+        const [res] = await connection.query(sql,['done',done,'id',id])
 
         if (res.affectedRows > 0) {
             ctx.body = {
@@ -134,8 +136,8 @@
             }
         } else {
             ctx.body = {
-                code: 0,
-                msg: '修改失败，请联系管理 员。',
+                code: 2,
+                msg: '修改失败，请联系管理员。',
             }
         }
     })
